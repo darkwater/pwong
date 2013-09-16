@@ -5,9 +5,10 @@ function love.load()
     bat = {
         x        = 300,
         y        = 550,
+        offset   = 50,
         width    = 150,
         height   = 20,
-        slowness = 2
+        slowness = 0.1
     }
 
     ball = {
@@ -45,7 +46,7 @@ end
 function love.update(dt)
     dt = math.min(0.025, dt)
 
-    bat.x = bat.x + (love.mouse.getX() - bat.x) / bat.slowness
+    bat.x = bat.x + (love.mouse.getX() - bat.x) / bat.slowness * dt
 
     ball.x = ball.x + math.cos(ball.angle) * ball.speed * dt
     ball.y = ball.y + math.sin(ball.angle) * ball.speed * dt
@@ -80,7 +81,7 @@ function love.update(dt)
 end
 
 function love.draw()
-    love.graphics.draw(images["background"], -1920 + 800, -1080 + 600)
+    love.graphics.draw(images["background"], 0, 0)
 
     love.graphics.rectangle("fill", bat.x - bat.width / 2, bat.y, bat.width, bat.height)
     love.graphics.circle("fill", ball.x, ball.y, ball.size, math.max(10, ball.size))
@@ -97,11 +98,19 @@ end
 
 function love.keypressed(key)
     for k,v in pairs(dlc_available) do
-        if v:check_available() then
+        if v.key == key and v:check_available() then
             v:buy()
         end
     end
 end
+
+function love.resize(w, h)
+    field.width = w
+    field.height = h
+
+    bat.y = h - bat.offset
+end
+
 
 
 function ricochet(x, y, sound)
