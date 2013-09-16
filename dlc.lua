@@ -1,30 +1,13 @@
 dlc_available = {
     {
-        name = "Score display",
+        name = "Interface",
         key = "1",
         requires = {
             points = 2,
-            breaks = {"Score display"}
+            breaks = {"Interface"}
         },
         costs = {
             points = 2
-        },
-        onbuy = function (self) end,
-        update = function (self) end,
-        draw = function (self)
-            love.graphics.printf("\\  " .. stats.points .. "  /", love.window,getWidth() / 2 - 100, 10, 200, "center")
-        end
-    },
-    {
-        name = "Resizability",
-        key = "2",
-        requires = {
-            points = 3,
-            dlcs = {"Score display"},
-            breaks = {"Resizability"}
-        },
-        costs = {
-            points = 3
         },
         onbuy = function (self)
             local width, height, flags = love.window.getMode()
@@ -32,6 +15,24 @@ dlc_available = {
 
             love.window.setMode(width, height, flags)
             love.resize(width, height)
+        end,
+        update = function (self) end,
+        draw = function (self)
+            -- love.graphics.printf("\\  " .. stats.points .. "  /", love.window.getWidth() / 2 - 100, 10, 200, "center")
+            love.graphics.print(stats.points .. " points | " .. #balls .. " balls", 30, 10)
+        end
+    },
+    {
+        name = "Extra ball",
+        key = "2",
+        requires = {
+            points = 4
+        },
+        costs = {
+            points = 4
+        },
+        onbuy = function (self)
+            add_ball()
         end,
         update = function (self) end,
         draw = function (self) end

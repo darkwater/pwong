@@ -11,13 +11,7 @@ function love.load()
         slowness = 0.1
     }
 
-    ball = {
-        x     = 600,
-        y     = 400,
-        size  = 15,
-        angle = math.pi * -0.25,
-        speed = 600
-    }
+    balls = {}
 
     field = {
         x      = 0,
@@ -41,6 +35,8 @@ function love.load()
     stats = {
         points = 0
     }
+
+    add_ball()
 end
 
 function love.update(dt)
@@ -48,27 +44,29 @@ function love.update(dt)
 
     bat.x = bat.x + (love.mouse.getX() - bat.x) / bat.slowness * dt
 
-    ball.x = ball.x + math.cos(ball.angle) * ball.speed * dt
-    ball.y = ball.y + math.sin(ball.angle) * ball.speed * dt
+    for k,v in pairs(balls) do
+        v.x = v.x + math.cos(v.angle) * v.speed * dt
+        v.y = v.y + math.sin(v.angle) * v.speed * dt
 
-    if ball.x + ball.size > field.x + field.width then
-        ricochet(-1, 0, "bump_wall")
-    end
+        if v.x + v.size > field.x + field.width then
+            ricochet(v, -1, 0, "bump_wall")
+        end
 
-    if ball.x - ball.size < field.x then
-        ricochet(1, 0, "bump_wall")
-    end
+        if v.x - v.size < field.x then
+            ricochet(v, 1, 0, "bump_wall")
+        end
 
-    if ball.y - ball.size < field.y then
-        ricochet(0, 1, "bump_wall")
-    end
+        if v.y - v.size < field.y then
+            ricochet(v, 0, 1, "bump_wall")
+        end
 
-    if ball.y + ball.size > bat.y then
-        if math.abs(ball.x - bat.x) < bat.width / 2 then
-            give_points(1)
-            ricochet(0, -1, "bump_bat")
-        else
-            error("u lost lol der goes ur " .. stats.points .. " pts omg n00b")
+        if v.y + v.size > bat.y then
+            if math.abs(v.x - bat.x) < bat.width / 2 then
+                give_points(1)
+                ricochet(v, 0, -1, "bump_bat")
+            else
+                balls[k] = nil
+            end
         end
     end
 
@@ -84,7 +82,10 @@ function love.draw()
     love.graphics.draw(images["background"], 0, 0)
 
     love.graphics.rectangle("fill", bat.x - bat.width / 2, bat.y, bat.width, bat.height)
-    love.graphics.circle("fill", ball.x, ball.y, ball.size, math.max(10, ball.size))
+
+    for k,v in pairs(balls) do
+        love.graphics.circle("fill", v.x, v.y, v.size, math.max(10, v.size))
+    end
 
     interface.msgbox.draw()
 
@@ -113,7 +114,7 @@ end
 
 
 
-function ricochet(x, y, sound)
+function ricochet(ball, x, y, sound)
     local sx = math.cos(ball.angle)
     local sy = math.sin(ball.angle)
     
@@ -131,7 +132,7 @@ function give_points(points)
 
     for k,v in pairs(dlc_available) do
         if not v.avail_msg_printed and v:check_available() then
-            interface.msgbox.print("New DLC available: " .. v.name .. " - press " .. v.key .. " to buy.")
+            interface.msgbox.print("New DLC available: " .. v.name .. " - press " .. v.key .. " to buy for " .. v.costs.points .. " points.")
             v.avail_msg_printed = true
         end
     end
@@ -139,4 +140,14 @@ end
 
 function take_points(points)
     stats.points = stats.points - points
+end
+
+function add_ball()
+    table.insert(balls, {
+        x     = math.random(field.x - 20, field.width - 40),
+        y     = 400,
+        size  = 15,
+        angle = math.pi * -math.random(35, 40) / 100,
+        speed = 600
+    })
 end
